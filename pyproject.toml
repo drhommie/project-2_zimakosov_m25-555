@@ -24,3 +24,8 @@ packages = [
 # Точка входа CLI (импорт из пакета, НЕ через src.)
 [project.scripts]
 project = "primitive_db.main:main"
+
+[dependency-groups]
+dev = [
+    "ruff (>=0.14.3,<0.15.0)"
+]
