@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+dist/
+*.pyc
+db_meta.json
+data/
