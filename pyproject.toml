@@ -1,0 +1,24 @@
+[project]
+name = "project-2-zimakosov-m25-555"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Vlad Zimakosov",email = "zimakosov-vladik@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+packages = [
+  { include = "src" }
+]
+
+[tool.poetry.scripts]
+project = "src.primitive_db.main:main"
