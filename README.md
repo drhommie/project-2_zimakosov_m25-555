@@ -23,3 +23,7 @@
 
 >>>Введите команду: drop_table products
 Ошибка: Таблица "products" не существует.
+
+### 🎥 Демонстрация
+
+[![asciinema demo](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll.svg)](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll)
