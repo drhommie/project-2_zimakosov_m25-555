@@ -1,31 +1,29 @@
 [project]
 name = "project-2-zimakosov-m25-555"
 version = "0.1.1"
-description = ""
-authors = [
-    {name = "Vlad Zimakosov",email = "zimakosov-vladik@yandex.ru"}
-]
+description = "Примитивная база данных"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
+authors = [{ name = "Vlad Zimakosov", email = "zimakosov-vladik@yandex.ru" }]
 dependencies = [
-    "prompt (>=0.4.1,<0.5.0)"
+  "prompt>=0.4.1,<0.5.0"
 ]
+
+# Консольная команда (Poetry 2.x просит именно здесь)
+[project.scripts]
+database = "primitive_db.main:main"
+
+# Включаем 'package mode' и описываем src-layout
+[tool.poetry]
+package-mode = true
+packages = [
+  { include = "primitive_db", from = "src" }
+]
+
+[tool.poetry.group.dev.dependencies]
+ruff = ">=0.14.3,<0.15.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-# Место, где искать код пакета (src-layout!)
-[tool.poetry]
-packages = [
-  { include = "primitive_db", from = "src" }
-]
-
-# Точка входа CLI (импорт из пакета, НЕ через src.)
-[project.scripts]
-project = "primitive_db.main:main"
-
-[dependency-groups]
-dev = [
-    "ruff (>=0.14.3,<0.15.0)"
-]
