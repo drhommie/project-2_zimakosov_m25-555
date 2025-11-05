@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-from primitive_db.engine import welcome
+from primitive_db.engine import run
 
-def main() -> None:
-    """Entry point for the primitive DB project."""
-    welcome()
-
+def main():
+    """Точка входа для программы базы данных."""
+    run()
 
 if __name__ == "__main__":
     main()
