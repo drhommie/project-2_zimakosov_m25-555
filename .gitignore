@@ -4,4 +4,4 @@ dist/
 *.pyc
 db_meta.json
 data/
-.DS_Store
+.DS_Storedemo.cast
