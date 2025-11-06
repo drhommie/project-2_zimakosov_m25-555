@@ -5,3 +5,4 @@ dist/
 db_meta.json
 data/
 .DS_Storedemo.cast
+data/*.json
