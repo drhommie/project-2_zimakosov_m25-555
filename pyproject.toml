@@ -6,9 +6,8 @@ readme = "README.md"
 authors = ["Vlad Zimakosov <zimakosov-vladik@yandex.ru>"]
 
 # ВАЖНО: чётко указываем, что пакет лежит в src/
-packages = [
-  { include = "primitive_db", from = "src" }
-]
+packages = [{ include = "primitive_db", from = "src" }]
+package-mode = true
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0"

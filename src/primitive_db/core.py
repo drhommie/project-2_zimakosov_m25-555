@@ -1,4 +1,8 @@
 # src/primitive_db/core.py
+
+from functools import wraps
+from decorators import handle_db_errors, confirm_action, log_time
+
 from typing import Any, Dict, List, Optional
 import time
 
@@ -33,6 +37,7 @@ def _parse_columns(specs):
         parsed.append((name, typ))
     return parsed
 
+@handle_db_errors
 def create_table(metadata, table_name, column_specs):
 
     tables = metadata.setdefault("tables", {})
@@ -45,6 +50,8 @@ def create_table(metadata, table_name, column_specs):
     }
     return metadata
 
+@handle_db_errors
+@confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
 
     tables = metadata.setdefault("tables", {})
@@ -53,6 +60,7 @@ def drop_table(metadata, table_name):
     del tables[table_name]
     return metadata
 
+@handle_db_errors
 def list_tables(metadata):
 
     tables = metadata.get("tables", {})
@@ -64,6 +72,7 @@ _FALSE = {"false", "0", "no", "n"}
 def _timed(op_name: str):
     """Декоратор: простое логирование времени выполнения операции (по флагу)."""
     def deco(fn):
+        @wraps(fn)
         def wrapper(*args, **kwargs):
             t0 = time.time()
             try:
@@ -75,7 +84,7 @@ def _timed(op_name: str):
     return deco
 
 def _require_where(fn):
-
+    @wraps(fn)
     def wrapper(table_data: List[Dict[str, Any]], where_clause: Optional[Dict[str, Any]] = None, *args, **kwargs):
         if not where_clause:
             raise ValueError("WHERE-клаузу необходимо указать (не может быть пустой).")
@@ -91,6 +100,19 @@ def _rows_io():
             from .utils import load_table_data  # локальный импорт, чтобы избежать циклов
             cache[table_name] = load_table_data(table_name)
         return cache[table_name]
+        if table_name not in cache:
+            from .utils import load_table_data
+            try:
+                data = load_table_data(table_name)
+            except FileNotFoundError:
+                data = []
+            if data is None:
+                data = []
+            if not isinstance(data, list):
+                raise ValueError("Повреждённый файл данных: ожидался список строк.")
+            cache[table_name] = data
+        return cache[table_name]    
+
 
     def save(table_name: str, rows: List[Dict[str, Any]]) -> None:
         cache[table_name] = rows
@@ -178,6 +200,8 @@ def _match_where(row: Dict[str, Any], where: Optional[Dict[str, Any]]) -> bool:
 
 # ---------- CRUD: INSERT / SELECT / UPDATE / DELETE ----------
 
+@handle_db_errors
+@log_time
 @_timed("insert")
 def insert(metadata: Dict[str, Any], table_name: str, values: List[Any]) -> List[Dict[str, Any]]:
     """
@@ -201,6 +225,8 @@ def insert(metadata: Dict[str, Any], table_name: str, values: List[Any]) -> List
     _save_rows(table_name, rows)
     return rows
 
+@handle_db_errors
+@log_time
 def select(table_data: List[Dict[str, Any]],
            where_clause: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
 
@@ -220,6 +246,7 @@ def _update_impl(table_data: List[Dict[str, Any]],
                 row[k] = v
     return table_data
 
+@handle_db_errors
 @_timed("update")
 def update(table_data: List[Dict[str, Any]],
            set_clause: Dict[str, Any],
@@ -235,6 +262,8 @@ def _delete_impl(table_data: List[Dict[str, Any]],
     table_data.extend(kept)
     return table_data
 
+@handle_db_errors
+@confirm_action("удаление записей")
 @_timed("delete")
 def delete(table_data: List[Dict[str, Any]],
            where_clause: Dict[str, Any]) -> List[Dict[str, Any]]:
