@@ -16,22 +16,52 @@
  - exit — выход
  
 **Пример:**
- >>> database
- >>>Введите команду: create_table users name:str age:int is_active:bool
- Таблица "users" успешно создана со столбцами: ID:int, name:str, age:int, is_active:bool
- 
- >>>Введите команду: create_table users name:str
+
+- Введите команду: 
+```bash
+create_table users name:str age:int is_active:bool
+```
+- Результат:
+```
+Таблица "users" успешно создана со столбцами: ID:int, name:str, age:int, is_active:bool
+```
+
+- Введите команду: 
+ ```bash
+create_table users name:str
+ ```
+- Результат:
+ ```
  Ошибка: Таблица "users" уже существует.
+ ```
+
+- Введите команду: 
+```bash
+list_tables
+```
+- Результат:
+ ```
+ users
+ ```
+
+- Введите команду: 
+```bash
+drop_table users
+```
+- Результат:
+```
+Таблица "users" успешно удалена.
+```
  
- >>>Введите команду: list_tables
- - users
- 
- >>>Введите команду: drop_table users
- Таблица "users" успешно удалена.
- 
- >>>Введите команду: drop_table products
+ - Введите команду: 
+ ```bash
+ drop_table products
+ ```
+ - Результат:
+ ```
  Ошибка: Таблица "products" не существует.
- 
+  ```
+
 ### Демонстрация
  
  [![asciinema demo](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll.svg)](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll)
@@ -171,6 +201,60 @@ info users
 Теперь CLI поддерживает весь цикл:
 - `create_table`, `drop_table`, `list_tables`
 - `insert`, `select`, `update`, `delete`, `info`
+
+### Демонстрация
+ 
+ [![asciinema demo](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0.svg)](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0)
+
+# Этап 4. Декораторы и замыкания
+
+На заключительном этапе проект был дополнен рядом улучшений качества кода и UX.
+
+## Добавленные декораторы
+
+| Декоратор | Назначение | Где применяется |
+|------------|-------------|-----------------|
+| `@handle_db_errors` | Централизованная обработка ошибок `KeyError`, `ValueError`, `FileNotFoundError` без дублирования `try...except`. | Все функции ядра (`create_table`, `drop_table`, `list_tables`, `insert`, `select`, `update`, `delete`) |
+| `@confirm_action(action_name)` | Запрашивает подтверждение перед опасными действиями. Пример вывода:<br>`Вы уверены, что хотите выполнить "удаление таблицы"? [y/n]:` | `drop_table`, `delete` |
+| `@log_time` | Замеряет время выполнения операций, использует `time.monotonic()`. Пример вывода:<br>`Функция insert выполнилась за 0.003 секунд.` | `insert`, `select` |
+
+## Замыкание-кэшер
+
+Добавлена функция `create_cacher()`, реализующая кэширование результатов `select`-запросов:  
+повторные одинаковые запросы возвращаются мгновенно без повторного чтения файла.
+
+## Рефакторинг
+
+- Удалены дублирующиеся `try...except` из ядра.  
+- Все декораторы применены к нужным функциям.  
+- Исправлены стилистические замечания Ruff (`make lint` — ✅).  
+
+## Пример работы
+
+```text
+>>> create table people name:str age:int
+Таблица "people" успешно создана со столбцами: ID:int, name:str, age:int
+
+>>> insert into people values ("Bob", 25)
+Функция insert выполнилась за 0.001 секунд.
+Запись с ID=1 успешно добавлена в таблицу "people".
+
+>>> select from people
+Функция select выполнилась за 0.000 секунд.
++----+------+-----+
+| ID | name | age |
++----+------+-----+
+|  1 | Bob  |  25 |
++----+------+-----+
+
+>>> delete from people where name="Bob"
+Вы уверены, что хотите выполнить "удаление записей"? [y/n]: n
+Операция отменена пользователем.
+
+>>> drop table people
+Вы уверены, что хотите выполнить "удаление таблицы"? [y/n]: y
+Таблица "people" успешно удалена.
+```
 
 ### Демонстрация
  
