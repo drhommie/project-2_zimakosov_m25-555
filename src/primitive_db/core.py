@@ -1,6 +1,6 @@
 # src/primitive_db/core.py
 
-from functools import wraps
+from functools import wraps # для _timed / _require_where
 from decorators import handle_db_errors, confirm_action, log_time
 
 from typing import Any, Dict, List, Optional

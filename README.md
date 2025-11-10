@@ -258,4 +258,4 @@ info users
 
 ### Демонстрация
  
- [![asciinema demo](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0.svg)](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0)
+ [![asciinema demo](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll.svg)](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll)
