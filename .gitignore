@@ -1,10 +1,30 @@
+# Виртуальное окружение
 .venv/
+.poetry/
+
+# Кэш и временные файлы Python
 __pycache__/
-dist/
 *.pyc
+*.pyo
+*.pyd
+
+# Системные файлы macOS
+.DS_Store
+
+# Артефакты сборки и дистрибуции
+build/
+dist/
+*.egg-info/
+
+# Демонстрации
+demo.cast
+demo_final.cast
+*.cast
+
+# Данные проекта (автогенерируемые)
 db_meta.json
 data/
-.DS_Store
-demo.cast
 data/*.json
+
+# Прочие временные файлы
 src/.DS_Store
