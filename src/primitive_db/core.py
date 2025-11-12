@@ -2,7 +2,7 @@
 from .decorators import handle_db_errors, confirm_action, log_time
 import time
 
-from .constants import ALLOWED_TYPES, ID_COL, LOG_TIMINGS
+from .constants import ALLOWED_TYPES, ID_COL, LOG_TIMINGS, TRUE_TOKENS, FALSE_TOKENS
 
 def _parse_columns(specs):
     if not specs:
@@ -58,11 +58,6 @@ def drop_table(metadata, table_name):
 def list_tables(metadata):
     tables = metadata.get("tables", {})
     return sorted(tables.keys())
-
-
-_TRUE = {"true", "1", "yes", "y"}
-_FALSE = {"false", "0", "no", "n"}
-
 
 def _timed(op_name):
     """Декоратор: простое логирование времени выполнения операции (по флагу)."""
@@ -142,9 +137,9 @@ def _coerce(value, type_name):
             return bool(value)
         if isinstance(value, str):
             v = value.strip().lower()
-            if v in _TRUE:
+            if v in TRUE_TOKENS:
                 return True
-            if v in _FALSE:
+            if v in FALSE_TOKENS:
                 return False
         raise ValueError(f'Не удалось привести "{value}" к bool')
     raise ValueError(f"Неподдерживаемый тип столбца: {type_name}")
