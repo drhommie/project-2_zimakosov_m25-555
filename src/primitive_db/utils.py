@@ -1,8 +1,7 @@
 import json
 import os
 
-DATA_DIR = "data"
-
+from .constants import DATA_DIR
 
 def load_metadata(filepath):
     """Читает JSON с метаданными. Если файла нет — возвращает {"tables": {}}."""

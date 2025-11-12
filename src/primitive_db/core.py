@@ -2,10 +2,7 @@
 from .decorators import handle_db_errors, confirm_action, log_time
 import time
 
-ALLOWED_TYPES = {"int", "str", "bool"}
-ID_COL = "ID"
-LOG_TIMINGS = False
-
+from .constants import ALLOWED_TYPES, ID_COL, LOG_TIMINGS
 
 def _parse_columns(specs):
     if not specs:

@@ -1,12 +1,11 @@
 # Разбор where/set/values без дополнительных библиотек кроме shlex
 import shlex
 
+from .constants import TRUE_TOKENS, FALSE_TOKENS
+
 OP_EQ = "="
 SEP_COMMA = ","
 SEP_AND = "and"
-
-TRUE_TOKENS = {"true", "1", "yes", "y"}
-FALSE_TOKENS = {"false", "0", "no", "n"}
 
 ERR_EMPTY = "Пустое выражение."
 ERR_EXPECT_KV = 'Ожидался шаблон вида: <колонка> = <значение>. Получено: "{}"'

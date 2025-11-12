@@ -1,6 +1,8 @@
 import shlex
 from prettytable import PrettyTable
 
+from .constants import META_FILE, SHOW_HELP
+
 from .utils import (
     load_metadata,
     save_metadata,
@@ -17,9 +19,6 @@ from .core import (
     delete as core_delete,
 )
 from .parser import parse_where, parse_set, parse_values_list
-
-# Именованная константа вместо магической строки
-META_FILE = "db_meta.json"
 
 def print_help():
     print("\n🗄️  Примитивная база данных (CLI)")
@@ -186,7 +185,8 @@ def _handle_info(metadata, raw_line):
 
 def run():
     print("***База данных***")
-    print_help()
+    if SHOW_HELP:
+        print_help()
 
     while True:
         try:
