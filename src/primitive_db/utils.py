@@ -1,11 +1,11 @@
-# src/primitive_db/utils.py
 import json
 import os
 
+DATA_DIR = "data"
+
+
 def load_metadata(filepath):
-    """
-    Читает JSON с метаданными. Если файла нет — возвращает {"tables": {}}.
-    """
+    """Читает JSON с метаданными. Если файла нет — возвращает {"tables": {}}."""
     if not os.path.exists(filepath):
         return {"tables": {}}
     try:
@@ -17,28 +17,24 @@ def load_metadata(filepath):
     except FileNotFoundError:
         return {"tables": {}}
 
+
 def save_metadata(filepath, data):
-    """
-    Сохраняет словарь метаданных в JSON с отступами.
-    """
+    """Сохраняет словарь метаданных в JSON с отступами."""
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-DATA_DIR = "data"
 
-def _ensure_data_dir() -> None:
+def _ensure_data_dir():
     os.makedirs(DATA_DIR, exist_ok=True)
 
-def _table_path(table_name: str) -> str:
-    # простая и безопасная сборка пути: data/<table>.json
+
+def _table_path(table_name):
     filename = f"{table_name}.json"
     return os.path.join(DATA_DIR, filename)
 
-def load_table_data(table_name: str):
-    """
-    Загружает список записей таблицы (list[dict]) из data/<table>.json.
-    Если файла нет — возвращает пустой список.
-    """
+
+def load_table_data(table_name):
+    """Загружает список записей таблицы из data/<table>.json. Если файла нет — []."""
     _ensure_data_dir()
     path = _table_path(table_name)
     if not os.path.exists(path):
@@ -46,10 +42,9 @@ def load_table_data(table_name: str):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_table_data(table_name: str, data) -> None:
-    """
-    Сохраняет список записей таблицы (list[dict]) в data/<table>.json.
-    """
+
+def save_table_data(table_name, data):
+    """Сохраняет список записей таблицы в data/<table>.json."""
     _ensure_data_dir()
     path = _table_path(table_name)
     with open(path, "w", encoding="utf-8") as f:

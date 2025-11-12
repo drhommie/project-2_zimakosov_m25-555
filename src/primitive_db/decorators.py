@@ -1,11 +1,7 @@
-from functools import wraps
 import time
 
 def handle_db_errors(func):
-    """
-    Декоратор для централизованной обработки ошибок в операциях БД.
-    """
-    @wraps(func)
+    """Декоратор для централизованной обработки ошибок в операциях БД."""
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -15,7 +11,7 @@ def handle_db_errors(func):
             msg = str(e)
             if "не существует" in msg or "уже существует" in msg:
                 print(f"Ошибка: {msg}")
-            else:    
+            else:
                 print(f"Ошибка: Таблица или столбец {e} не найден.")
         except ValueError as e:
             print(f"Ошибка валидации: {e}")
@@ -25,13 +21,9 @@ def handle_db_errors(func):
     return wrapper
 
 
-def confirm_action(action_name: str):
-    """
-    Фабрика декораторов: перед выполнением функции спрашивает подтверждение.
-    Если ответ не 'y' — операция отменяется (возвращает None).
-    """
+def confirm_action(action_name):
+    """Перед выполнением функции спрашивает подтверждение. Не 'y' — отмена."""
     def deco(func):
-        @wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 answer = input(f'Вы уверены, что хотите выполнить "{action_name}"? [y/n]: ').strip().lower()
@@ -47,11 +39,7 @@ def confirm_action(action_name: str):
 
 
 def log_time(func):
-    """
-    Декоратор: измеряет время выполнения функции и печатает результат.
-    Использует time.monotonic() для точности.
-    """
-    @wraps(func)
+    """Измеряет время выполнения функции и печатает результат (time.monotonic)."""
     def wrapper(*args, **kwargs):
         start = time.monotonic()
         result = func(*args, **kwargs)

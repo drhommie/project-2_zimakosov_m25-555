@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "project-2-zimakosov-m25-555"
-version = "0.1.1"
+version = "0.1.2"
 description = "Примитивная база данных"
 readme = "README.md"
 authors = ["Vlad Zimakosov <zimakosov-vladik@yandex.ru>"]
 
-# ВАЖНО: чётко указываем, что пакет лежит в src/
+# Пакет лежит в src/
 packages = [{ include = "primitive_db", from = "src" }]
 package-mode = true
 

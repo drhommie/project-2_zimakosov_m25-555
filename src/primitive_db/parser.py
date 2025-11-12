@@ -1,12 +1,6 @@
-# src/primitive_db/parser.py
-
-from __future__ import annotations
-
+# Разбор where/set/values без дополнительных библиотек кроме shlex
 import shlex
-import re
-from typing import Any, Dict, List, Tuple
 
-# ---------- КОНСТАНТЫ ----------
 OP_EQ = "="
 SEP_COMMA = ","
 SEP_AND = "and"
@@ -22,55 +16,25 @@ ERR_DUPLICATE_KEYS = 'Дублируется колонка "{}"'
 ERR_EMPTY_KEY = "Пустое имя колонки."
 
 
-# ---------- ДЕКОРАТОР ЕДИНООБРАЗНЫХ ОШИБОК ----------
-
-def _parse_guard(fn):
-    def wrapper(text: str) -> Dict[str, Any] | List[Any]:
-        try:
-            return fn(text)
-        except ValueError:
-            raise
-        except Exception as e:
-            raise ValueError(f"Некорректное выражение: {e}")
-    return wrapper
-
-
-# ---------- ПРИВЕДЕНИЕ ТИПОВ ----------
-
-def _infer_scalar(token: str) -> Any:
-    """
-    - true/false/yes/no/1/0 -> bool
-    - целые числа -> int
-    - остальное -> str
-    Требование: строковые значения в командах в кавычках.
-    """
-    # Чистим «мусорные» символы между буквами (fa?lse, tru​e и т.п.)
-    token = re.sub(r"[^A-Za-z0-9_+\-]", "", token)
-
+def _infer_scalar(token):
+    """ true/false/yes/no/1/0 -> bool; целые -> int; остальное -> str. """
     low = token.lower()
     if low in TRUE_TOKENS:
         return True
     if low in FALSE_TOKENS:
         return False
-    # int?
+    # целое число с необязательным знаком
     if (low.startswith(("+", "-")) and low[1:].isdigit()) or low.isdigit():
         try:
             return int(low)
         except Exception:
             pass
-    return token  # строка (шlex уже снял кавычки)
+    return token  # строка (shlex уже снял кавычки)
 
 
-# ---------- ВСПОМОГАТЕЛЬНЫЙ РАЗБОР ПАР key=value ----------
-
-def _split_assignments(tokens: List[str], allowed_sep: str) -> List[Tuple[str, str]]:
-    """
-    Разбирает поток токенов в пары (key, value) c поддержкой:
-      SET:  key = val , key2 = val2 , ...
-      WHERE: key = val and key2 = val2 and ...
-    allowed_sep: SEP_COMMA (для SET) или SEP_AND (для WHERE)
-    """
-    pairs: List[Tuple[str, str]] = []
+def _split_assignments(tokens, allowed_sep):
+    """Разбирает поток токенов в пары (key, value)."""
+    pairs = []
     i = 0
     n = len(tokens)
     while i < n:
@@ -97,26 +61,17 @@ def _split_assignments(tokens: List[str], allowed_sep: str) -> List[Tuple[str, s
     return pairs
 
 
-# ---------- ПУБЛИЧНЫЕ ПАРСЕРЫ ----------
-
-@_parse_guard
-def parse_set(text: str) -> Dict[str, Any]:
-    """
-    Пример:
-      'age = 29, is_active = true, title = "The Hobbit"'
-      -> {'age': 29, 'is_active': True, 'title': 'The Hobbit'}
-    """
+def parse_set(text):
     if not text or not text.strip():
         raise ValueError(ERR_EMPTY)
 
     normalized = text.replace(",", f" {SEP_COMMA} ")
     tokens = shlex.split(normalized, posix=True)
-
-    # унифицируем «разделитель» — заменим запятую на ключевое слово
+    # унифицируем разделитель
     tokens = [SEP_AND if t == SEP_COMMA else t for t in tokens]
     pairs = _split_assignments(tokens, allowed_sep=SEP_AND)
 
-    out: Dict[str, Any] = {}
+    out = {}
     for k, raw in pairs:
         if not k:
             raise ValueError(ERR_EMPTY_KEY)
@@ -126,20 +81,14 @@ def parse_set(text: str) -> Dict[str, Any]:
     return out
 
 
-@_parse_guard
-def parse_where(text: str) -> Dict[str, Any]:
-    """
-    Пример:
-      'year = 1937 and title = "The Hobbit" and is_available = true'
-      -> {'year': 1937, 'title': 'The Hobbit', 'is_available': True}
-    """
+def parse_where(text):
     if not text or not text.strip():
         raise ValueError(ERR_EMPTY)
 
     tokens = shlex.split(text, posix=True)
     pairs = _split_assignments(tokens, allowed_sep=SEP_AND)
 
-    out: Dict[str, Any] = {}
+    out = {}
     for k, raw in pairs:
         if not k:
             raise ValueError(ERR_EMPTY_KEY)
@@ -149,22 +98,19 @@ def parse_where(text: str) -> Dict[str, Any]:
     return out
 
 
-@_parse_guard
-def parse_values_list(text: str) -> List[Any]:
-    """
-    Пример:
-      '"The Hobbit", "Tolkien", 1937, true'
-      -> ['The Hobbit', 'Tolkien', 1937, True]
-    Упрощение: строки в кавычках.
-    """
+def parse_values_list(text):
     if not text or not text.strip():
         raise ValueError(ERR_EMPTY)
 
-    # снимаем внешние скобки, если пришли вместе с values(...)
     text = text.strip()
+    # обрезаем внешние скобки, если есть
     if text.startswith("(") and text.endswith(")"):
         text = text[1:-1].strip()
 
-    tokens = shlex.split(text, posix=True)
-    clean_tokens = [t for t in tokens if t != "," and t != "，"]
+    # Критично: отделяем запятые пробелами, чтобы shlex видел их как отдельные токены
+    normalized = text.replace(",", " , ")
+    tokens = shlex.split(normalized, posix=True)
+
+    # выбрасываем запятые и приводим типы (int/bool/str)
+    clean_tokens = [t for t in tokens if t != ","]
     return [_infer_scalar(t) for t in clean_tokens]
