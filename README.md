@@ -7,9 +7,12 @@
 ## Возможности
 - Создание и удаление таблиц со схемой столбцов (`int`, `str`, `bool`).  
 - Хранение данных в `data/<table>.json`.  
-- CRUD‑операции с простым SQL‑подобным синтаксисом.  
+- CRUD-операции с простым SQL-подобным синтаксисом.  
 - Красивый вывод с **PrettyTable**.  
-- Декораторы: централизованная обработка ошибок, замер времени, подтверждение опасных операций.  
+- Централизованные **декораторы**:
+  - `@handle_db_errors` — перехватывает и красиво выводит ошибки (например, при некорректных командах или типах данных);  
+  - `@confirm_action` — запрашивает подтверждение перед удалением таблицы или записей;  
+  - `@log_time` — замеряет и отображает время выполнения операций для отладки. 
 
 ---
 
@@ -54,18 +57,18 @@ make run
 create_table users name:str age:int is_active:bool
 
 # Добавляем записи
-insert into users values ("Anton", 28, true)
-insert into users values ("Alla", 31, false)
+insert into users values ("Sergei", 28, true)
+insert into users values ("Anna", 31, false)
 
 # Выбираем данные
 select from users
 select from users where age = 28 and is_active = true
 
 # Обновляем данные
-update users set age = 29 where name = "Anton"
+update users set age = 29 where name = "Sergei"
 
 # Удаляем записи
-delete from users where name = "Alla"
+delete from users where name = "Anna"
 
 # Информация о таблице
 info users
@@ -84,13 +87,21 @@ drop_table users
 ## Демонстрация (asciinema)
 
 Полный сценарий работы показан в демонстрации ниже (встроенная запись):
-[![asciinema demo (full)](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll.svg)](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll)
 
-Дополнительно (по шагам):
-- Управление таблицами (создание/список/удаление):  
+[![asciinema demo (full)](https://asciinema.org/a/J0eFNtMwE0SrwDfc7tbXvB3nK.svg)](https://asciinema.org/a/J0eFNtMwE0SrwDfc7tbXvB3nK)
+
+---
+
+### Дополнительно (по шагам)
+
+- **Управление таблицами (создание / список / удаление):**  
   [![asciinema demo](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll.svg)](https://asciinema.org/a/sETP3BZ7z3s51MklTQWhIKxll)
-- CRUD‑операции:  
+
+- **CRUD-операции (создание / чтение / обновление / удаление):**  
   [![asciinema demo](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0.svg)](https://asciinema.org/a/9vrWjyQki3q9l3MMc8ZXMc7A0)
+
+- **Этап 4 – Декораторы и замыкания:**  
+  [![asciinema demo (full)](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll.svg)](https://asciinema.org/a/usWjkW7rcvGQMxjbfEWCqFkll)
 
 ---
 
@@ -113,31 +124,34 @@ poetry run pytest -q
 ---
 
 ## Структура проекта (сокращённо)
+
 ```
 project-root/
 ├─ src/
-│  ├─ __init__.py
-│  ├─ decorators.py          # Декораторы (обработка ошибок, логирование, подтверждения)
 │  └─ primitive_db/
 │     ├─ __init__.py
-│     ├─ core.py            # CRUD-логика и работа с таблицами
-│     ├─ engine.py          # Парсинг и диспетчеризация команд
-│     ├─ main.py            # CLI-интерфейс (точка входа)
-│     ├─ parser.py          # Разбор пользовательских запросов
-│     └─ utils.py           # Вспомогательные функции
-├─ Makefile                  # Команды установки, запуска и линтинга
-├─ pyproject.toml            # Настройки Poetry, зависимости, entry point
-├─ poetry.lock               # Зафиксированные версии библиотек
-├─ .gitignore                # Список исключений из репозитория
-└─ README.md                 # Документация проекта
-```
+│     ├─ constants.py       # Все константы проекта (пути, типы, токены, флаги)
+│     ├─ core.py            # Основная бизнес-логика (CRUD и работа с таблицами)
+│     ├─ decorators.py      # Декораторы: обработка ошибок, подтверждения, логирование времени
+│     ├─ engine.py          # Парсинг команд и главный цикл взаимодействия с пользователем
+│     ├─ main.py            # Точка входа (CLI-интерфейс)
+│     ├─ parser.py          # Разбор команд where/set/values
+│     └─ utils.py           # Работа с файлами (загрузка/сохранение данных и метаданных)
+├─ Makefile                 # Команды установки, запуска и линтинга
+├─ pyproject.toml           # Настройки Poetry, зависимости, entry point
+├─ poetry.lock              # Зафиксированные версии библиотек
+├─ .gitignore               # Исключения из репозитория
+└─ README.md                # Документация проекта
 
+```
 ---
 
 ## Технические детали
 
-- **Схемы таблиц** описаны в meta‑файле (например, `db_meta.json`), при создании таблицы к схеме всегда добавляется `ID:int` (автоинкремент).
+- **Схемы таблиц** описаны в meta-файле (например, `db_meta.json`), при создании таблицы к схеме всегда добавляется `ID:int` (автоинкремент).
 - **Вывод таблиц** реализован с помощью библиотеки PrettyTable.
 - **Кэширование select** может быть реализовано замыканием для повторных запросов.
-- **Обработка ошибок** централизована декоратором, чтобы не дублировать `try/except`.
-- **Подтверждения** запрашиваются перед опасными действиями (например, `drop_table`, массовый `delete`).
+- **Обработка ошибок** реализована через `@handle_db_errors`, который перехватывает исключения, выводит понятные сообщения и предотвращает аварийное завершение программы.  
+- **Подтверждения действий** выполняются через `@confirm_action`: перед удалением таблицы или записей программа требует подтверждения от пользователя.  
+- **Логирование времени** (`@log_time`) помогает анализировать производительность операций при разработке.
+---
